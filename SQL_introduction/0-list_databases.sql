@@ -1,6 +1,2 @@
-#!/bin/bash
-#fgbebebe
-USER="root"
-PASS="Database"
-
-mysql -u "$USER" -p"PASS" -e "SHOW DATABASES;"
+-- egrf4nj4ngo
+SHOW DATABASES;
