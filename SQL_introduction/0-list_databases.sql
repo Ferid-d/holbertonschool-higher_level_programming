@@ -1,6 +1,6 @@
 #!/bin/bash
-
+#fgbebebe
 USER="root"
-PASS="password123"
+PASS="Database"
 
 mysql -u "$USER" -p"PASS" -e "SHOW DATABASES;"
