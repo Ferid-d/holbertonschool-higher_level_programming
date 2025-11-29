@@ -1,2 +1,2 @@
---higugbi
+-- higugbi
 SHOW TABLES;
