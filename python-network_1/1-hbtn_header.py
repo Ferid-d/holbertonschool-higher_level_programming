@@ -1,13 +1,13 @@
 #!/usr/bin/python3
-"""Fetches https://intranet.hbtn.io/status using urllib package"""
+"""Takes in a URL, sends a request and displays the X-Request-Id header value"""
 
 
 import sys
 import urllib.request
 
 if __name__ == "__main__":
-    url = sys.argv[0]
+    url = sys.argv[1]
     with urllib.request.urlopen(url) as response:
-        x-request-id = response.getheader('X-Request-Id')
-    if x-request-id:
-        print(x-request-id)
+        x_request_id = response.getheader('X-Request-Id')
+    if x_request_id:
+        print(x_request_id)
