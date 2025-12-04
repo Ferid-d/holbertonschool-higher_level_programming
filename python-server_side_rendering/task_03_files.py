@@ -21,26 +21,15 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
         td { padding: 12px; border-bottom: 1px solid #ddd; }
         tr:hover { background: #f5f5f5; }
         .price { color: #2e7d32; font-weight: bold; }
-        .nav { margin-bottom: 20px; }
-        .nav a { color: #4CAF50; text-decoration: none; margin-right: 15px; padding: 5px 10px; border-radius: 4px; }
-        .nav a:hover { background: #f0f0f0; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Products Display</h1>
         
-        <div class="nav">
-            <a href="/products?source=json">JSON Products</a>
-            <a href="/products?source=csv">CSV Products</a>
-            <a href="/products?source=json&id=1">Product ID 1</a>
-            <a href="/products?source=json&id=999">Invalid ID</a>
-            <a href="/products?source=xml">Wrong Source</a>
-        </div>
-        
         <div class="info">
-            Source: <strong>{{ source }}</strong> | 
-            Filter: <strong>{% if product_id %}ID: {{ product_id }}{% else %}All Products{% endif %}</strong> |
+            Source: <strong>{{ data_source }}</strong> | 
+            Filter: <strong>{% if pid %}ID: {{ pid }}{% else %}All Products{% endif %}</strong> |
             Found: <strong>{{ products|length }} product(s)</strong>
         </div>
         
@@ -81,33 +70,15 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 
 # Veri dosyalarını oluştur
 def create_data_files():
-    # JSON dosyası oluştur
-    json_data = [
-        {"id": 1, "name": "Laptop", "category": "Electronics", "price": 799.99},
-        {"id": 2, "name": "Coffee Mug", "category": "Home Goods", "price": 15.99},
-        {"id": 3, "name": "Python Book", "category": "Books", "price": 39.99},
-        {"id": 4, "name": "Headphones", "category": "Electronics", "price": 129.99},
-        {"id": 5, "name": "Desk Lamp", "category": "Home Goods", "price": 24.99}
-    ]
-    
-    if not os.path.exists('products.json'):
-        with open('products.json', 'w') as f:
-            json.dump(json_data, f, indent=2)
-    
-    # CSV dosyası oluştur
-    csv_data = [
-        ["id", "name", "category", "price"],
-        ["1", "Laptop", "Electronics", "799.99"],
-        ["2", "Coffee Mug", "Home Goods", "15.99"],
-        ["3", "Python Book", "Books", "39.99"],
-        ["4", "Headphones", "Electronics", "129.99"],
-        ["5", "Desk Lamp", "Home Goods", "24.99"]
-    ]
-    
+    # products.json zaten var (test dosyası)
+    # products.csv oluştur
     if not os.path.exists('products.csv'):
         with open('products.csv', 'w', newline='') as f:
             writer = csv.writer(f)
-            writer.writerows(csv_data)
+            writer.writerow(["id", "name", "category", "price"])
+            writer.writerow([1, "Laptop", "Electronics", "799.99"])
+            writer.writerow([2, "Coffee Mug", "Home Goods", "15.99"])
+            writer.writerow([3, "Python Book", "Books", "39.99"])
 
 # JSON dosyasını oku
 def read_json_file():
@@ -141,10 +112,10 @@ def home():
 @app.route('/products')
 def display_products():
     # Query parametrelerini al
-    source = request.args.get('source', '').lower()
-    product_id = request.args.get('id', type=int)
+    data_source = request.args.get('source', '').lower()
+    pid = request.args.get('id', type=int)
     
-    # Veri dosyalarını oluştur
+    # CSV dosyasını oluştur (JSON zaten var)
     create_data_files()
     
     # Hata mesajı
@@ -152,26 +123,26 @@ def display_products():
     products = []
     
     # Source kontrolü
-    if source == 'json':
+    if data_source == 'json':
         products = read_json_file()
-    elif source == 'csv':
+    elif data_source == 'csv':
         products = read_csv_file()
     else:
         error = "Wrong source. Use 'json' or 'csv'"
     
     # ID filtreleme
-    if product_id and not error:
-        filtered = [p for p in products if p["id"] == product_id]
+    if pid and not error:
+        filtered = [p for p in products if p["id"] == pid]
         if filtered:
             products = filtered
         else:
-            error = f"Product with ID {product_id} not found"
+            error = f"Product with ID {pid} not found"
     
-    # Template'i render et
+    # Template'i render et (source yerine data_source kullan)
     return render_template_string(
         HTML_TEMPLATE,
-        source=source,
-        product_id=product_id,
+        data_source=data_source,
+        pid=pid,
         products=products,
         error=error
     )
