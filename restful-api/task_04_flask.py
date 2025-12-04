@@ -2,11 +2,8 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# Kullanıcı veritabanı (memory'de tutulacak)
-users = {
-    "jane": {"username": "jane", "name": "Jane", "age": 28, "city": "Los Angeles"},
-    "john": {"username": "john", "name": "John", "age": 30, "city": "New York"}
-}
+# BAŞLANGIÇTA BOŞ OLMALI - testler boş dictionary bekliyor
+users = {}
 
 @app.route('/')
 def home():
