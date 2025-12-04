@@ -10,67 +10,39 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
 <html>
 <head>
     <title>Products Display</title>
-    <style>
-        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #333; margin-bottom: 20px; border-bottom: 3px solid #4CAF50; padding-bottom: 10px; }
-        .error { background: #ffebee; color: #c62828; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #ffcdd2; }
-        .info { background: #e3f2fd; color: #1565c0; padding: 15px; border-radius: 5px; margin: 20px 0; border: 1px solid #bbdefb; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        th { background: #4CAF50; color: white; padding: 12px; text-align: left; }
-        td { padding: 12px; border-bottom: 1px solid #ddd; }
-        tr:hover { background: #f5f5f5; }
-        .price { color: #2e7d32; font-weight: bold; }
-    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Products Display</h1>
-        
-        <div class="info">
-            Source: <strong>{{ data_source }}</strong> | 
-            Filter: <strong>{% if pid %}ID: {{ pid }}{% else %}All Products{% endif %}</strong> |
-            Found: <strong>{{ products|length }} product(s)</strong>
-        </div>
-        
-        {% if error %}
-            <div class="error">
-                <h3>Error</h3>
-                <p>{{ error }}</p>
-            </div>
-        {% endif %}
-        
-        {% if products %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Category</th>
-                        <th>Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products %}
-                    <tr>
-                        <td>{{ product.id }}</td>
-                        <td>{{ product.name }}</td>
-                        <td>{{ product.category }}</td>
-                        <td class="price">${{ "%.2f"|format(product.price) }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% elif not error %}
-            <div class="info">No products to display</div>
-        {% endif %}
-    </div>
+    <h1>Products Display</h1>
+    
+    {% if error %}
+        <p style="color: red;"><strong>Error:</strong> {{ error }}</p>
+    {% endif %}
+    
+    {% if products %}
+        <table border="1">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Price</th>
+            </tr>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.id }}</td>
+                <td>{{ product.name }}</td>
+                <td>{{ product.category }}</td>
+                <td>${{ "%.2f"|format(product.price) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    {% elif not error %}
+        <p>No products to display</p>
+    {% endif %}
 </body>
 </html>'''
 
 # Veri dosyalarını oluştur
 def create_data_files():
-    # products.json zaten var (test dosyası)
     # products.csv oluştur
     if not os.path.exists('products.csv'):
         with open('products.csv', 'w', newline='') as f:
@@ -78,7 +50,6 @@ def create_data_files():
             writer.writerow(["id", "name", "category", "price"])
             writer.writerow([1, "Laptop", "Electronics", "799.99"])
             writer.writerow([2, "Coffee Mug", "Home Goods", "15.99"])
-            writer.writerow([3, "Python Book", "Books", "39.99"])
 
 # JSON dosyasını oku
 def read_json_file():
@@ -115,7 +86,7 @@ def display_products():
     data_source = request.args.get('source', '').lower()
     pid = request.args.get('id', type=int)
     
-    # CSV dosyasını oluştur (JSON zaten var)
+    # CSV dosyasını oluştur
     create_data_files()
     
     # Hata mesajı
@@ -128,21 +99,19 @@ def display_products():
     elif data_source == 'csv':
         products = read_csv_file()
     else:
-        error = "Wrong source. Use 'json' or 'csv'"
+        error = "Wrong source"
     
-    # ID filtreleme
+    # ID filtreleme - TEST İÇİN TAM "Product not found" MESAJI
     if pid and not error:
         filtered = [p for p in products if p["id"] == pid]
         if filtered:
             products = filtered
         else:
-            error = f"Product with ID {pid} not found"
+            error = "Product not found"  # Tam olarak bu mesaj
     
-    # Template'i render et (source yerine data_source kullan)
+    # Template'i render et
     return render_template_string(
         HTML_TEMPLATE,
-        data_source=data_source,
-        pid=pid,
         products=products,
         error=error
     )
